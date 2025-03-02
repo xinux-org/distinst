@@ -122,9 +122,7 @@ pub enum DecryptionError {
 }
 
 impl From<DecryptionError> for DiskError {
-    fn from(why: DecryptionError) -> DiskError {
-        DiskError::Decryption { why }
-    }
+    fn from(why: DecryptionError) -> DiskError { DiskError::Decryption { why } }
 }
 
 impl DiskError {
@@ -134,9 +132,7 @@ impl DiskError {
 }
 
 impl From<io::Error> for DiskError {
-    fn from(why: io::Error) -> DiskError {
-        DiskError::IO { why }
-    }
+    fn from(why: io::Error) -> DiskError { DiskError::IO { why } }
 }
 
 impl From<DiskError> for io::Error {
@@ -159,7 +155,5 @@ impl From<PartitionSizeError> for PartitionError {
 }
 
 impl From<PartitionTableError> for DiskError {
-    fn from(why: PartitionTableError) -> DiskError {
-        DiskError::PartitionTable { why }
-    }
+    fn from(why: PartitionTableError) -> DiskError { DiskError::PartitionTable { why } }
 }

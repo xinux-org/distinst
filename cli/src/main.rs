@@ -220,10 +220,11 @@ fn main() {
                 .takes_value(true)
                 .multiple(true),
         )
-        .arg(Arg::with_name("run-ubuntu-drivers").long("run-ubuntu-drivers").help(
-            "use ubuntu-drivers to find drivers then install in the chroot, some may have \
-             proprietary licenses",
-        ))
+        .arg(
+            Arg::with_name("run-ubuntu-drivers")
+                .long("run-ubuntu-drivers")
+                .help("use ubuntu-drivers to find drivers then install in the chroot, some may have proprietary licenses")
+        )
         .get_matches();
 
     if let Err(err) = distinst::log(|_level, _message| {}) {
@@ -243,14 +244,14 @@ fn main() {
             tzs_ = Timezones::new().expect("failed to get timzones");
             let zone = tzs_
                 .zones()
-                .into_iter()
+                .iter()
                 .find(|z| z.name() == zone)
-                .expect(&format!("failed to find zone: {}", zone));
+                .unwrap_or_else(|| panic!("failed to find zone: {}", zone));
             let region = zone
                 .regions()
-                .into_iter()
+                .iter()
                 .find(|r| r.name() == region)
-                .expect(&format!("failed to find region: {}", region));
+                .unwrap_or_else(|| panic!("failed to find region: {}", region));
             Some(region.clone())
         }
         None => None,
@@ -379,15 +380,15 @@ fn main() {
         installer.install(
             disks,
             &Config {
-                flags: install_flags(&matches),
-                hostname: hostname.into(),
-                keyboard_layout: keyboard.next().map(String::from).unwrap(),
-                keyboard_model: take_optional_string(keyboard.next()),
+                flags:            install_flags(&matches),
+                hostname:         hostname.into(),
+                keyboard_layout:  keyboard.next().map(String::from).unwrap(),
+                keyboard_model:   take_optional_string(keyboard.next()),
                 keyboard_variant: take_optional_string(keyboard.next()),
-                old_root: None,
-                lang: lang.into(),
-                remove: remove.into(),
-                squashfs: squashfs.into(),
+                old_root:         None,
+                lang:             lang.into(),
+                remove:           remove.into(),
+                squashfs:         squashfs.into(),
             },
         )
     };
@@ -558,5 +559,5 @@ fn find_partition_mut(
     disk: &mut Disk,
     partition: i32,
 ) -> Result<&mut PartitionInfo, DistinstError> {
-    disk.get_partition_mut(partition).ok_or_else(|| DistinstError::PartitionNotFound { partition })
+    disk.get_partition_mut(partition).ok_or(DistinstError::PartitionNotFound { partition })
 }

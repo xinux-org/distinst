@@ -31,7 +31,7 @@ const MEGABYTE: u64 = 1_000_000;
 #[derive(new)]
 pub struct BlockCoordinates {
     pub start: u64,
-    pub end: u64,
+    pub end:   u64,
 }
 
 impl BlockCoordinates {
@@ -41,7 +41,7 @@ impl BlockCoordinates {
     pub fn resize_to(&mut self, new_len: u64) {
         let offset = (self.end - self.start) as i64 - new_len as i64;
         if offset < 0 {
-            self.end += offset.abs() as u64;
+            self.end += offset.unsigned_abs();
         } else {
             self.end -= offset as u64;
         }
@@ -51,7 +51,7 @@ impl BlockCoordinates {
 /// Defines how many sectors to skip, and how the partition is.
 #[derive(Clone, Copy)]
 pub struct OffsetCoordinates {
-    pub skip: u64,
+    pub skip:   u64,
     pub offset: i64,
     pub length: u64,
 }

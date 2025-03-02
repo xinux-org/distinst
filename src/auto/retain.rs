@@ -1,8 +1,8 @@
 //! Retain users when reinstalling, keeping their home folder and user account.
 
 use crate::bootloader::Bootloader;
-use crate::disks::Disks;
 use disk_types::FileSystem;
+use crate::disks::Disks;
 
 use super::{mount_and_then, AccountFiles, ReinstallError, UserData};
 
@@ -103,7 +103,7 @@ pub fn validate_backup_conditions<P: AsRef<Path>>(
     disks: &Disks,
     path: P,
 ) -> Result<(), ReinstallError> {
-    partition_configuration_is_valid(&disks).and_then(|_| install_media_exists(path.as_ref()))
+    partition_configuration_is_valid(disks).and_then(|_| install_media_exists(path.as_ref()))
 }
 
 /// Validate that the configuration in the disks structure is valid for installation.
@@ -146,10 +146,10 @@ fn read_and_exclude<F: FnMut(&Path) -> Result<(), ReinstallError>>(
 }
 
 pub struct Backup<'a> {
-    pub users: Vec<UserData<'a>>,
+    pub users:     Vec<UserData<'a>>,
     pub localtime: Option<PathBuf>,
-    pub timezone: Option<Vec<u8>>,
-    pub networks: Option<Vec<(OsString, Vec<u8>)>>,
+    pub timezone:  Option<Vec<u8>>,
+    pub networks:  Option<Vec<(OsString, Vec<u8>)>>,
 }
 
 impl<'a> Backup<'a> {
@@ -173,13 +173,13 @@ impl<'a> Backup<'a> {
                 .collect::<Vec<OsString>>();
 
             info!("retaining localtime information");
-            let localtime = exists_and_then(&base, "etc/localtime", |localtime| {
+            let localtime = exists_and_then(base, "etc/localtime", |localtime| {
                 localtime.canonicalize().ok().and_then(|ref p| get_timezone_path(p))
             });
 
             info!("retaining timezone information");
             let timezone =
-                exists_and_then(&base, "etc/timezone", |timezone| misc::read(&timezone).ok());
+                exists_and_then(base, "etc/timezone", |timezone| misc::read(timezone).ok());
 
             info!("retaining /etc/NetworkManager/system-connections/");
             let networks = base.join("etc/NetworkManager/system-connections/").read_dir().ok().map(
@@ -293,9 +293,9 @@ impl<'a> Backup<'a> {
             if let Some(ref networks) = self.networks {
                 info!("restoring NetworkManager configuration");
                 let network_conf_dir = &base.join("etc/NetworkManager/system-connections/");
-                let _ = fs::create_dir_all(&network_conf_dir);
+                let _ = fs::create_dir_all(network_conf_dir);
 
-                for &(ref connection, ref data) in networks {
+                for (connection, data) in networks {
                     create_network_conf(network_conf_dir, connection, data);
                 }
             }

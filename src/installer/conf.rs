@@ -1,5 +1,5 @@
-use crate::errors::IoContext;
 use envfile::EnvFile;
+use crate::errors::IoContext;
 use std::io;
 
 #[derive(AsMut, Deref, DerefMut)]
@@ -17,9 +17,7 @@ impl RecoveryEnv {
         Ok(Self(env))
     }
 
-    pub fn remove(&mut self, key: &str) {
-        self.0.store.remove(key);
-    }
+    pub fn remove(&mut self, key: &str) { self.0.store.remove(key); }
 
     pub fn write(&mut self) -> io::Result<()> {
         self.0

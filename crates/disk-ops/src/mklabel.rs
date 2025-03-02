@@ -1,7 +1,7 @@
-use crate::parted::*;
 use disk_types::PartitionTable;
 use external::wipefs;
 use libparted::{Disk as PedDisk, DiskType as PedDiskType};
+use crate::parted::*;
 use std::{
     fs::File,
     io::{self, Seek, SeekFrom, Write},
@@ -46,6 +46,6 @@ pub fn zero<P: AsRef<Path>>(device: P, sectors: u64, offset: u64) -> io::Result<
             file.seek(SeekFrom::Start(512 * offset)).map(|_| ())?;
         }
 
-        (0..sectors).map(|_| file.write(&zeroed_sector).map(|_| ())).collect()
+        (0..sectors).try_for_each(|_| file.write(&zeroed_sector).map(|_| ()))
     })
 }

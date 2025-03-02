@@ -1,7 +1,7 @@
 use self::FileSystem::*;
 use super::exec;
-use crate::retry::Retry;
 use disk_types::FileSystem;
+use crate::retry::Retry;
 use std::{
     ffi::{OsStr, OsString},
     io,
@@ -41,11 +41,15 @@ pub fn blkid_partition<P: AsRef<Path>>(part: P) -> Option<FileSystem> {
     for field in String::from_utf8_lossy(&output).split_whitespace() {
         if field.starts_with("TYPE=") {
             let length = field.len();
-            return if length > 7 { field[6..length - 1].parse::<FileSystem>().ok() } else { None };
+            return if length > 7 {
+                field[6..length - 1].parse::<FileSystem>().ok()
+            } else {
+                None
+            }
         }
     }
 
-    return None;
+    None
 }
 
 /// Checks & corrects errors with partitions that have been moved / resized.
@@ -67,9 +71,7 @@ pub fn mkfs<P: AsRef<Path>>(part: P, kind: FileSystem) -> io::Result<()> {
         Ext2 => ("mkfs.ext2", &["-F", "-q"]),
         Ext3 => ("mkfs.ext3", &["-F", "-q"]),
         Ext4 => ("mkfs.ext4", &["-F", "-q", "-E", "lazy_itable_init"]),
-        F2fs => {
-            ("mkfs.f2fs", &["-f", "-q", "-O", "extra_attr,inode_checksum,sb_checksum,compression"])
-        }
+        F2fs => ("mkfs.f2fs", &["-f", "-q", "-O", "extra_attr,inode_checksum,sb_checksum,compression"]),
         Fat16 => ("mkfs.fat", &["-F", "16"]),
         Fat32 => ("mkfs.fat", &["-F", "32"]),
         Ntfs => ("mkfs.ntfs", &["-FQ", "-q"]),

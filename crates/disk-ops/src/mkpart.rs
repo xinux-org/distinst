@@ -1,9 +1,9 @@
-use crate::parted::*;
 use disk_types::{BlockDeviceExt, FileSystem, PartitionExt, PartitionType, SectorExt};
 use libparted::{
     Device, FileSystemType as PedFileSystem, Geometry, Partition as PedPartition, PartitionFlag,
     PartitionType as PedPartitionType,
 };
+use crate::parted::*;
 use std::{
     io,
     path::{Path, PathBuf},
@@ -13,58 +13,42 @@ use std::{
 #[derive(Debug, SmartDefault, Clone, PartialEq)]
 pub struct PartitionCreate {
     /// The location of the disk in the system.
-    pub path: PathBuf,
+    pub path:         PathBuf,
     /// The start sector that the partition will have.
     pub start_sector: u64,
     /// The end sector that the partition will have.
-    pub end_sector: u64,
+    pub end_sector:   u64,
     /// Whether the filesystem should be formatted.
-    pub format: bool,
+    pub format:       bool,
     /// The format that the file system should be formatted to.
-    pub file_system: Option<FileSystem>,
+    pub file_system:  Option<FileSystem>,
     /// Whether the partition should be primary or logical.
     #[default(PartitionType::Primary)]
-    pub kind: PartitionType,
+    pub kind:         PartitionType,
     /// Flags which should be set on the partition.
-    pub flags: Vec<PartitionFlag>,
+    pub flags:        Vec<PartitionFlag>,
     /// Defines the label to apply
-    pub label: Option<String>,
+    pub label:        Option<String>,
 }
 
 impl BlockDeviceExt for PartitionCreate {
-    fn get_device_path(&self) -> &Path {
-        &self.path
-    }
+    fn get_device_path(&self) -> &Path { &self.path }
 
-    fn get_mount_point(&self) -> Option<&Path> {
-        None
-    }
+    fn get_mount_point(&self) -> Option<&Path> { None }
 }
 
 impl PartitionExt for PartitionCreate {
-    fn get_file_system(&self) -> Option<FileSystem> {
-        self.file_system
-    }
+    fn get_file_system(&self) -> Option<FileSystem> { self.file_system }
 
-    fn get_sector_end(&self) -> u64 {
-        self.end_sector
-    }
+    fn get_sector_end(&self) -> u64 { self.end_sector }
 
-    fn get_sector_start(&self) -> u64 {
-        self.start_sector
-    }
+    fn get_sector_start(&self) -> u64 { self.start_sector }
 
-    fn get_partition_flags(&self) -> &[PartitionFlag] {
-        &self.flags
-    }
+    fn get_partition_flags(&self) -> &[PartitionFlag] { &self.flags }
 
-    fn get_partition_label(&self) -> Option<&str> {
-        self.label.as_deref()
-    }
+    fn get_partition_label(&self) -> Option<&str> { self.label.as_deref() }
 
-    fn get_partition_type(&self) -> PartitionType {
-        self.kind
-    }
+    fn get_partition_type(&self) -> PartitionType { self.kind }
 }
 
 impl SectorExt for PartitionCreate {
@@ -81,7 +65,7 @@ where
 {
     // Create a new geometry from the start sector and length of the new partition.
     let length = partition.get_sector_end() - partition.get_sector_start();
-    let geometry = Geometry::new(&device, partition.get_sector_start() as i64, length as i64)
+    let geometry = Geometry::new(device, partition.get_sector_start() as i64, length as i64)
         .map_err(|why| io::Error::new(why.kind(), format!("failed to create geometry: {}", why)))?;
 
     // Convert our internal partition type enum into libparted's variant.

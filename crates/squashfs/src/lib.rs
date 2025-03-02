@@ -46,8 +46,8 @@ fn getpty(columns: u32, lines: u32) -> (RawFd, String) {
 
     unsafe {
         let size = libc::winsize {
-            ws_row: lines as libc::c_ushort,
-            ws_col: columns as libc::c_ushort,
+            ws_row:    lines as libc::c_ushort,
+            ws_col:    columns as libc::c_ushort,
             ws_xpixel: 0,
             ws_ypixel: 0,
         };
@@ -137,7 +137,7 @@ pub fn extract<P: AsRef<Path>, Q: AsRef<Path>, F: FnMut(i32)>(
     let directory = directory
         .to_str()
         .ok_or_else(|| Error::new(ErrorKind::InvalidData, "Invalid directory path"))?
-        .replace("'", "'\"'\"'");
+        .replace('\'', "'\"'\"'");
 
     let format = if archive.extension().map_or(false, |ext| ext == "squashfs") {
         ExtractFormat::Squashfs
@@ -148,7 +148,7 @@ pub fn extract<P: AsRef<Path>, Q: AsRef<Path>, F: FnMut(i32)>(
     let archive = archive
         .to_str()
         .ok_or_else(|| Error::new(ErrorKind::InvalidData, "Invalid archive path"))?
-        .replace("'", "'\"'\"'");
+        .replace('\'', "'\"'\"'");
 
     let mut command = match format {
         ExtractFormat::Squashfs => {

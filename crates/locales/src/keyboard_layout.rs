@@ -1,4 +1,4 @@
-use misc;
+
 use serde_xml_rs as xml;
 use std::io::{self, BufReader};
 
@@ -11,14 +11,10 @@ pub struct KeyboardLayouts {
 
 impl KeyboardLayouts {
     /// Fetch the layouts from the layout list.
-    pub fn get_layouts(&self) -> &[KeyboardLayout] {
-        &self.layout_list.layout
-    }
+    pub fn get_layouts(&self) -> &[KeyboardLayout] { &self.layout_list.layout }
 
     /// Fetch the layouts from the layout list.
-    pub fn get_layouts_mut(&mut self) -> &mut [KeyboardLayout] {
-        &mut self.layout_list.layout
-    }
+    pub fn get_layouts_mut(&mut self) -> &mut [KeyboardLayout] { &mut self.layout_list.layout }
 }
 
 /// A list of keyboard layouts.
@@ -31,21 +27,17 @@ pub struct LayoutList {
 #[derive(Debug, Deserialize)]
 pub struct KeyboardLayout {
     #[serde(rename = "configItem")]
-    pub config_item: ConfigItem,
+    pub config_item:  ConfigItem,
     #[serde(rename = "variantList")]
     pub variant_list: Option<VariantList>,
 }
 
 impl KeyboardLayout {
     /// Fetches the name of the keyboard layout.
-    pub fn get_name(&self) -> &str {
-        &self.config_item.name
-    }
+    pub fn get_name(&self) -> &str { &self.config_item.name }
 
     /// Fetches a description of the layout.
-    pub fn get_description(&self) -> &str {
-        &self.config_item.description
-    }
+    pub fn get_description(&self) -> &str { &self.config_item.description }
 
     /// Fetches a list of possible layout variants.
     pub fn get_variants(&self) -> Option<&Vec<KeyboardVariant>> {
@@ -56,10 +48,10 @@ impl KeyboardLayout {
 /// Contains the name and description of a keyboard layout.
 #[derive(Debug, Deserialize)]
 pub struct ConfigItem {
-    pub name: String,
+    pub name:              String,
     #[serde(rename = "shortDescription")]
     pub short_description: Option<String>,
-    pub description: String,
+    pub description:       String,
 }
 
 /// A list of possible variants of a keyboard layout.
@@ -77,14 +69,10 @@ pub struct KeyboardVariant {
 
 impl KeyboardVariant {
     /// The name of this variant of a keybaord layout.
-    pub fn get_name(&self) -> &str {
-        &self.config_item.name
-    }
+    pub fn get_name(&self) -> &str { &self.config_item.name }
 
     /// A description of this variant of a keyboard layout.
-    pub fn get_description(&self) -> &str {
-        &self.config_item.description
-    }
+    pub fn get_description(&self) -> &str { &self.config_item.description }
 }
 
 const X11_BASE_RULES: &str = "/usr/share/X11/xkb/rules/base.xml";

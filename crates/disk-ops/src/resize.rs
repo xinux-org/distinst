@@ -40,8 +40,8 @@ pub enum ResizeUnit {
 #[derive(new)]
 pub struct ResizeOperation {
     pub sector_size: u64,
-    pub old: BlockCoordinates,
-    pub new: BlockCoordinates,
+    pub old:         BlockCoordinates,
+    pub new:         BlockCoordinates,
 }
 
 impl ResizeOperation {
@@ -60,26 +60,18 @@ impl ResizeOperation {
 
         OffsetCoordinates {
             offset: self.new.start as i64 - self.old.start as i64,
-            skip: self.old.start,
+            skip:   self.old.start,
             length: self.old.end - self.old.start,
         }
     }
 
-    pub fn is_shrinking(&self) -> bool {
-        self.relative_sectors() < 0
-    }
+    pub fn is_shrinking(&self) -> bool { self.relative_sectors() < 0 }
 
-    pub fn is_growing(&self) -> bool {
-        self.relative_sectors() > 0
-    }
+    pub fn is_growing(&self) -> bool { self.relative_sectors() > 0 }
 
-    pub fn is_moving(&self) -> bool {
-        self.old.start != self.new.start
-    }
+    pub fn is_moving(&self) -> bool { self.old.start != self.new.start }
 
-    pub fn absolute_sectors(&self) -> u64 {
-        self.new.end - self.new.start
-    }
+    pub fn absolute_sectors(&self) -> u64 { self.new.end - self.new.start }
 
     pub fn relative_sectors(&self) -> i64 {
         // Obtain the differences between the start and end sectors.
@@ -111,7 +103,7 @@ pub fn resize_partition<P: AsRef<Path>>(
     args: &[&str],
     size: &str,
     path: P,
-    fs: &str,
+    _fs: &str,
     options: u8,
 ) -> io::Result<()> {
     info!("resizing {} to {}", path.as_ref().display(), size);
@@ -124,7 +116,7 @@ pub fn resize_partition<P: AsRef<Path>>(
     // Attempt to sync three times before returning an error.
     for attempt in 0..3 {
         ::std::thread::sleep(::std::time::Duration::from_secs(1));
-        let result = blockdev(&path, &["--flushbufs"]);
+        let result = blockdev(&path, ["--flushbufs"]);
         if result.is_err() && attempt == 2 {
             result?;
         } else {
@@ -146,7 +138,7 @@ pub fn resize_partition<P: AsRef<Path>>(
         let (npath, _mount) = if options & (BTRFS | XFS) != 0 {
             let temp = TempDir::new("distinst")?;
             info!("temporarily mounting {} to {}", path.as_ref().display(), temp.path().display());
-            let mount = Mount::new(path.as_ref(), temp.path(), fs, MountFlags::empty(), None)?;
+            let mount = Mount::new(path.as_ref(), temp.path())?;
             let mount = mount.into_unmount_drop(UnmountFlags::DETACH);
             (temp.path().to_path_buf(), Some((mount, temp)))
         } else {
@@ -200,23 +192,23 @@ pub struct PartitionChange {
     /// The location of the device where the partition resides.
     pub device_path: PathBuf,
     /// The location of the partition in the system.
-    pub path: PathBuf,
+    pub path:        PathBuf,
     /// The partition ID that will be changed.
-    pub num: i32,
+    pub num:         i32,
     /// Defines whether this is a Primary or Logical partition.
-    pub kind: PartitionType,
+    pub kind:        PartitionType,
     /// The start sector that the partition will have.
-    pub start: u64,
+    pub start:       u64,
     /// The end sector that the partition will have.
-    pub end: u64,
+    pub end:         u64,
     /// The file system that is currently on the partition.
-    pub filesystem: Option<FileSystem>,
+    pub filesystem:  Option<FileSystem>,
     /// A diff of flags which should be set on the partition.
-    pub flags: Vec<PartitionFlag>,
+    pub flags:       Vec<PartitionFlag>,
     /// All of the flags that are set on the new disk.
-    pub new_flags: Vec<PartitionFlag>,
+    pub new_flags:   Vec<PartitionFlag>,
     /// Defines the label to apply
-    pub label: Option<String>,
+    pub label:       Option<String>,
 }
 
 /// Performs all move & resize operations for a given partition.
@@ -396,7 +388,7 @@ where
 
 fn ntfs_dry_run(path: &Path, size: &str) -> io::Result<()> {
     let mut consistency_check = Command::new("ntfsresize");
-    consistency_check.args(&["-f", "-f", "--no-action", "-s"]).arg(size).arg(path);
+    consistency_check.args(["-f", "-f", "--no-action", "-s"]).arg(size).arg(path);
 
     info!("executing {:?}", consistency_check);
     let mut child = consistency_check.stdin(Stdio::piped()).spawn()?;
@@ -412,7 +404,7 @@ fn ntfs_dry_run(path: &Path, size: &str) -> io::Result<()> {
 
 fn ntfs_consistency_check(path: &Path) -> io::Result<()> {
     let mut consistency_check = Command::new("ntfsresize");
-    consistency_check.args(&["-i", "-f"]).arg(path);
+    consistency_check.args(["-i", "-f"]).arg(path);
 
     info!("executing {:?}", consistency_check);
     let mut child = consistency_check.stdin(Stdio::piped()).spawn()?;

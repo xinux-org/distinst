@@ -65,6 +65,4 @@ pub fn exec(
     }
 }
 
-fn mebibytes(bytes: u64) -> String {
-    format!("{}", bytes / (1024 * 1024))
-}
+fn mebibytes(bytes: u64) -> String { format!("{}", bytes / (1024 * 1024)) }

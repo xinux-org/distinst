@@ -1,16 +1,16 @@
 use crate::external::{cryptsetup_encrypt, cryptsetup_open, pvcreate};
-use crate::DiskError;
 use std::{
     fmt,
     path::{Path, PathBuf},
 };
+use crate::DiskError;
 
 /// A structure which contains the encryption settings for a physical volume.
 #[derive(Clone, PartialEq)]
 pub struct LvmEncryption {
     pub physical_volume: String,
-    pub password: Option<String>,
-    pub keydata: Option<(String, Option<(PathBuf, PathBuf)>)>,
+    pub password:        Option<String>,
+    pub keydata:         Option<(String, Option<(PathBuf, PathBuf)>)>,
 }
 
 impl fmt::Debug for LvmEncryption {
@@ -52,7 +52,7 @@ impl LvmEncryption {
     /// Creates a physical volume
     pub fn create_physical_volume(&self) -> Result<(), DiskError> {
         let path = ["/dev/mapper/", &self.physical_volume].concat();
-        pvcreate(&path).map_err(|why| DiskError::PhysicalVolumeCreate {
+        pvcreate(path).map_err(|why| DiskError::PhysicalVolumeCreate {
             volume: self.physical_volume.clone(),
             why,
         })

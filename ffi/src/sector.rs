@@ -1,13 +1,13 @@
-use crate::get_str;
-use crate::to_cstr;
 use distinst::Sector;
-use libc;
+use crate::get_str;
+
 use std::ptr;
+use crate::to_cstr;
 
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct DistinstSector {
-    flag: DISTINST_SECTOR_KIND,
+    flag:  DISTINST_SECTOR_KIND,
     value: u64,
 }
 
@@ -29,10 +29,10 @@ impl From<DistinstSector> for Sector {
         match sector.flag {
             DISTINST_SECTOR_KIND::START => Sector::Start,
             DISTINST_SECTOR_KIND::END => Sector::End,
-            DISTINST_SECTOR_KIND::UNIT => Sector::Unit(sector.value as u64),
-            DISTINST_SECTOR_KIND::UNIT_FROM_END => Sector::UnitFromEnd(sector.value as u64),
-            DISTINST_SECTOR_KIND::MEGABYTE => Sector::Megabyte(sector.value as u64),
-            DISTINST_SECTOR_KIND::MEGABYTE_FROM_END => Sector::MegabyteFromEnd(sector.value as u64),
+            DISTINST_SECTOR_KIND::UNIT => Sector::Unit(sector.value),
+            DISTINST_SECTOR_KIND::UNIT_FROM_END => Sector::UnitFromEnd(sector.value),
+            DISTINST_SECTOR_KIND::MEGABYTE => Sector::Megabyte(sector.value),
+            DISTINST_SECTOR_KIND::MEGABYTE_FROM_END => Sector::MegabyteFromEnd(sector.value),
             DISTINST_SECTOR_KIND::PERCENT => Sector::Percent(sector.value as u16),
         }
     }
@@ -54,8 +54,8 @@ impl From<Sector> for DistinstSector {
 
 #[repr(C)]
 pub struct DistinstSectorResult {
-    tag: u8,
-    error: *mut libc::c_char,
+    tag:    u8,
+    error:  *mut libc::c_char,
     sector: DistinstSector,
 }
 
@@ -68,8 +68,8 @@ pub unsafe extern "C" fn distinst_sector_from_str(
         Ok(string) => string,
         Err(why) => {
             return DistinstSectorResult {
-                tag: 1,
-                error: to_cstr(format!("{}", why)),
+                tag:    1,
+                error:  to_cstr(format!("{}", why)),
                 sector: distinst_sector_start(),
             };
         }
@@ -78,13 +78,13 @@ pub unsafe extern "C" fn distinst_sector_from_str(
     // Then attempt to get the corresponding sector value
     match string.parse::<Sector>().ok() {
         Some(sector) => DistinstSectorResult {
-            tag: 0,
-            error: ptr::null_mut(),
+            tag:    0,
+            error:  ptr::null_mut(),
             sector: DistinstSector::from(sector),
         },
         None => DistinstSectorResult {
-            tag: 1,
-            error: to_cstr("sector_from_str: invalid input".into()),
+            tag:    1,
+            error:  to_cstr("sector_from_str: invalid input".into()),
             sector: distinst_sector_start(),
         },
     }

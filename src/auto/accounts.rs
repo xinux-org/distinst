@@ -8,9 +8,9 @@ use crate::misc::read;
 
 #[derive(Default, Debug)]
 pub struct AccountFiles {
-    passwd: HashMap<Vec<u8>, Vec<u8>>,
-    group: HashMap<Vec<u8>, Vec<u8>>,
-    shadow: HashMap<Vec<u8>, Vec<u8>>,
+    passwd:  HashMap<Vec<u8>, Vec<u8>>,
+    group:   HashMap<Vec<u8>, Vec<u8>>,
+    shadow:  HashMap<Vec<u8>, Vec<u8>>,
     gshadow: HashMap<Vec<u8>, Vec<u8>>,
 }
 
@@ -38,9 +38,9 @@ impl AccountFiles {
                 .and_then(|(p, g)| read(base.join("etc/shadow")).map(|s| (p, g, s)))
                 .and_then(|(p, g, s)| read(base.join("etc/gshadow")).map(|gs| (p, g, s, gs)))
                 .map(|(ref passwd, ref group, ref shadow, ref gshadow)| AccountFiles {
-                    passwd: lines(passwd),
-                    group: lines(group),
-                    shadow: lines(shadow),
+                    passwd:  lines(passwd),
+                    group:   lines(group),
+                    shadow:  lines(shadow),
                     gshadow: lines(gshadow),
                 })
                 .map_err(|why| ReinstallError::AccountsObtain { why, step: "get" })
@@ -63,15 +63,15 @@ impl AccountFiles {
         }
 
         user_fields.and_then(|(user, group_id, home, passwd)| {
-            let user_string = String::from_utf8_lossy(&user);
+            let user_string = String::from_utf8_lossy(user);
             info!(
                 "found user '{}' from home path at {}",
                 user_string,
                 String::from_utf8_lossy(home)
             );
 
-            let user: &[u8] = &user;
-            let group = self.group.iter().find(|&(_, value)| group_has_id(&value, group_id)).map(
+            let user: &[u8] = user;
+            let group = self.group.iter().find(|&(_, value)| group_has_id(value, group_id)).map(
                 |(group, value)| {
                     info!(
                         "found group '{}' associated with '{}'",
@@ -85,7 +85,7 @@ impl AccountFiles {
             let secondary_groups = self
                 .group
                 .iter()
-                .filter(|&(_, value)| group_has_user(&value, user))
+                .filter(|&(_, value)| group_has_user(value, user))
                 .inspect(|&(group, _)| {
                     info!(
                         "{} has a secondary group: '{}'",
@@ -125,11 +125,11 @@ fn get_passwd_home_and_group(entry: &[u8]) -> (&[u8], &[u8]) {
 
 /// Information about a user that should be carried over to the corresponding files.
 pub struct UserData<'a> {
-    pub user: &'a [u8],
-    pub passwd: &'a [u8],
-    pub shadow: &'a [u8],
-    pub group: &'a [u8],
-    pub gshadow: &'a [u8],
+    pub user:             &'a [u8],
+    pub passwd:           &'a [u8],
+    pub shadow:           &'a [u8],
+    pub group:            &'a [u8],
+    pub gshadow:          &'a [u8],
     pub secondary_groups: Vec<&'a [u8]>,
 }
 

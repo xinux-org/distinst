@@ -3,7 +3,7 @@
 //! associated with a language (if any exist at all).
 
 use super::get_main_country;
-use misc;
+
 use std::{
     collections::{btree_map::Entry, BTreeMap},
     io::{self, BufRead, BufReader},
@@ -36,7 +36,7 @@ pub fn get_default(lang: &str) -> Option<String> {
                         format!("{}_{}.UTF-8", lang, country)
                     } else {
                         match codeset.first() {
-                            Some(&Some(ref codeset)) if codeset.dot => {
+                            Some(Some(codeset)) if codeset.dot => {
                                 format!("{}_{}.{}", lang, country, codeset.variant)
                             }
                             _ => format!("{}_{}", lang, country),
@@ -63,7 +63,7 @@ pub fn get_default(lang: &str) -> Option<String> {
             format!("{}.UTF-8", prefix)
         } else {
             match codeset.first() {
-                Some(&Some(ref codeset)) if codeset.dot => {
+                Some(Some(codeset)) if codeset.dot => {
                     format!("{}.{}", prefix, codeset.variant)
                 }
                 _ => prefix,
@@ -79,9 +79,7 @@ pub fn get_default(lang: &str) -> Option<String> {
 /// ```rust,no_exec,no_run
 /// LOCALES.keys().map(|x| x.as_str()).collect()
 /// ```
-pub fn get_language_codes() -> Vec<&'static str> {
-    LOCALES.keys().map(|x| x.as_str()).collect()
-}
+pub fn get_language_codes() -> Vec<&'static str> { LOCALES.keys().map(|x| x.as_str()).collect() }
 
 /// Fetch a list of countries associated with a language code.
 pub fn get_countries(lang: &str) -> Vec<&'static str> {
@@ -136,8 +134,8 @@ pub fn parse_locales() -> io::Result<Locales> {
 #[derive(Debug, PartialEq)]
 struct LocaleEntry {
     language: String,
-    country: Option<String>,
-    codeset: Option<Codeset>,
+    country:  Option<String>,
+    codeset:  Option<Codeset>,
 }
 
 impl LocaleEntry {
@@ -158,13 +156,11 @@ impl LocaleEntry {
 #[derive(Debug, PartialEq)]
 pub struct Codeset {
     pub variant: String,
-    pub dot: bool,
+    pub dot:     bool,
 }
 
 impl Codeset {
-    fn new(variant: String, dot: bool) -> Codeset {
-        Codeset { variant, dot }
-    }
+    fn new(variant: String, dot: bool) -> Codeset { Codeset { variant, dot } }
 }
 
 fn parse_entry(line: &str) -> Option<LocaleEntry> {
@@ -226,17 +222,17 @@ hak_TW UTF-8
         let mut lines = INPUT.lines();
 
         assert_eq!(
-            parse_entry(&lines.next().unwrap()),
+            parse_entry(lines.next().unwrap()),
             Some(LocaleEntry::new("gu".into(), Some("IN".into()), Some(("UTF-8".into(), false))))
         );
 
         assert_eq!(
-            parse_entry(&lines.next().unwrap()),
+            parse_entry(lines.next().unwrap()),
             Some(LocaleEntry::new("gv".into(), Some("GB".into()), Some(("UTF-8".into(), true))))
         );
 
         assert_eq!(
-            parse_entry(&lines.next().unwrap()),
+            parse_entry(lines.next().unwrap()),
             Some(LocaleEntry::new(
                 "gv".into(),
                 Some("GB".into()),
@@ -245,7 +241,7 @@ hak_TW UTF-8
         );
 
         assert_eq!(
-            parse_entry(&lines.next().unwrap()),
+            parse_entry(lines.next().unwrap()),
             Some(LocaleEntry::new("hak".into(), Some("TW".into()), Some(("UTF-8".into(), false))))
         );
     }

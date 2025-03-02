@@ -6,8 +6,8 @@ repository = "https://github.com/pop-os/distinst"
 categories = ["os::unix-apis"]
 keywords = ["linux", "distribution", "installer"]
 authors = [
-  "Jeremy Soller <jackpot51@gmail.com>",
-  "Michael Aaron Murphy <michael@system76.com>",
+    "Jeremy Soller <jackpot51@gmail.com>",
+    "Michael Aaron Murphy <michael@system76.com>",
 ]
 license = "LGPL-3.0"
 readme = "README.md"
@@ -51,7 +51,7 @@ os-release = "0.1.0"
 partition-identity = "0.2.8"
 proc-mounts = "0.2.4"
 rayon = "1.3.0"
-sys-mount = "3.0.1"
+sys-mount = "^3.0.1"
 tempdir = "0.3.7"
 bitflags = "1.2.1"
 err-derive = "0.3"

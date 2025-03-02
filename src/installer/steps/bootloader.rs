@@ -1,17 +1,16 @@
 use crate::chroot::Chroot;
 use crate::disks::{Bootloader, Disks};
 use crate::errors::IoContext;
-use crate::Config;
-use crate::MODIFY_BOOT_ORDER;
-use libc;
+
 use os_release::OsRelease;
 use std::{
-    env,
     ffi::{OsStr, OsString},
     fs, io,
     os::unix::ffi::{OsStrExt, OsStringExt},
     path::{Path, PathBuf},
 };
+use crate::Config;
+use crate::MODIFY_BOOT_ORDER;
 
 use super::mount_efivars;
 
@@ -52,44 +51,31 @@ pub fn bootloader<F: FnMut(i32)>(
 
         // Also ensure that the /boot/efi directory is created.
         if bootloader == Bootloader::Efi && boot_opt.is_some() {
-            fs::create_dir_all(&efi_path)
+            fs::create_dir_all(efi_path)
                 .with_context(|err| format!("failed to create efi directory: {}", err))?;
         }
 
         {
             let mut chroot = Chroot::new(mount_dir)?;
-            let efivars_mount = mount_efivars(&mount_dir)?;
+            let efivars_mount = mount_efivars(mount_dir)?;
 
             match bootloader {
                 Bootloader::Bios => {
-                    let grub_target = match env::consts::ARCH {
-                        "x86_64" => "i386-pc",
-                        unknown => {
-                            return Err(io::Error::new(
-                                io::ErrorKind::Other,
-                                format!(
-                                    "unsupported architecture {} for bootloader {:?}",
-                                    unknown, bootloader
-                                ),
-                            ))
-                        }
-                    };
-
                     chroot
                         .command(
                             "grub-install",
                             &[
                                 // Recreate device map
-                                "--recheck",
+                                "--recheck".into(),
                                 // Install for BIOS
-                                &format!("--target={}", grub_target),
+                                "--target=i386-pc".into(),
                                 // Install to the bootloader_dev device
-                                bootloader_dev.to_str().unwrap(),
+                                bootloader_dev.to_str().unwrap().to_owned(),
                             ],
                         )
                         .run()?;
 
-                    chroot.command("update-initramfs", &["-c", "-k", "all"]).run()?;
+                    chroot.command("update-initramfs", ["-c", "-k", "all"]).run()?;
                 }
                 Bootloader::Efi => {
                     // Grub disallows whitespaces in the name.
@@ -109,24 +95,10 @@ pub fn bootloader<F: FnMut(i32)>(
                             )
                             .run()?;
                     } else {
-                        let grub_target = match env::consts::ARCH {
-                            "aarch64" => "arm64-efi",
-                            "x86_64" => "x86_64-efi",
-                            unknown => {
-                                return Err(io::Error::new(
-                                    io::ErrorKind::Other,
-                                    format!(
-                                        "unsupported architecture {} for bootloader {:?}",
-                                        unknown, bootloader
-                                    ),
-                                ))
-                            }
-                        };
-
                         chroot
                             .command(
                                 "/usr/bin/env",
-                                &[
+                                [
                                     "bash",
                                     "-c",
                                     "echo GRUB_ENABLE_CRYPTODISK=y >> /etc/default/grub",
@@ -137,8 +109,8 @@ pub fn bootloader<F: FnMut(i32)>(
                         chroot
                             .command(
                                 "grub-install",
-                                &[
-                                    &format!("--target={}", grub_target),
+                                [
+                                    "--target=x86_64-efi",
                                     "--efi-directory=/boot/efi",
                                     &format!("--boot-directory=/boot/efi/EFI/{}", name),
                                     &format!("--bootloader={}", name),
@@ -151,29 +123,19 @@ pub fn bootloader<F: FnMut(i32)>(
                         chroot
                             .command(
                                 "grub-mkconfig",
-                                &["-o", &format!("/boot/efi/EFI/{}/grub/grub.cfg", name)],
+                                ["-o", &format!("/boot/efi/EFI/{}/grub/grub.cfg", name)],
                             )
                             .run()?;
                     }
 
-                    chroot.command("update-initramfs", &["-c", "-k", "all"]).run()?;
+                    chroot.command("update-initramfs", ["-c", "-k", "all"]).run()?;
 
                     if config.flags & MODIFY_BOOT_ORDER != 0 {
                         let efi_part_num = efi_part_num.to_string();
-                        let efi_arch = match env::consts::ARCH {
-                            "aarch64" => "aa64",
-                            "x86_64" => "x64",
-                            unknown => {
-                                return Err(io::Error::new(
-                                    io::ErrorKind::Other,
-                                    format!("unsupported architecture {} for EFI", unknown),
-                                ))
-                            }
-                        };
                         let loader = if &name == "Pop!_OS" {
-                            format!("\\EFI\\systemd\\systemd-boot{}.efi", efi_arch)
+                            "\\EFI\\systemd\\systemd-bootx64.efi".into()
                         } else {
-                            format!("\\EFI\\{}\\shim{}.efi", name, efi_arch)
+                            format!("\\EFI\\{}\\shimx64.efi", name)
                         };
 
                         let args: &[&OsStr] = &[
@@ -200,7 +162,7 @@ pub fn bootloader<F: FnMut(i32)>(
             }
 
             drop(efivars_mount);
-            chroot.unmount(true)?;
+            chroot.unmount(false)?;
         }
     }
 

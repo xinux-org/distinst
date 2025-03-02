@@ -67,14 +67,14 @@ pub trait PartitionExt: BlockDeviceExt + SectorExt {
             self.get_file_system().and_then(|fs| TempDir::new("distinst").ok().map(|t| (fs, t)));
 
         if let Some((fs, tempdir)) = mount {
-            let fs = match fs {
+            let _fs = match fs {
                 FileSystem::Fat16 | FileSystem::Fat32 => "vfat",
                 fs => fs.into(),
             };
 
             // Mount the FS to the temporary directory
             let base = tempdir.path();
-            if let Ok(m) = Mount::new(self.get_device_path(), base, fs, MountFlags::empty(), None) {
+            if let Ok(m) = Mount::new(self.get_device_path(), base) {
                 return func(Some((base, m.into_unmount_drop(UnmountFlags::DETACH))));
             }
         }
@@ -162,13 +162,20 @@ mod tests {
     }
 
     impl BlockDeviceExt for Fake {
-        fn get_device_name(&self) -> &str {
-            "fictional"
+        fn get_device_name(&self) -> String {
+            "fictional".to_string()
         }
 
         fn get_device_path(&self) -> &Path {
             Path::new("/dev/fictional")
         }
+    }
+
+    impl SectorExt for Fake {
+        fn get_sectors(&self) -> u64 {
+            self.end_sector - self.start_sector
+        }
+        fn get_logical_block_size(&self) -> u64 { 512 }
     }
 
     impl PartitionExt for Fake {
@@ -181,7 +188,7 @@ mod tests {
         }
 
         fn get_partition_label(&self) -> Option<&str> {
-            self.name.as_ref().map(|s| s.as_str())
+            self.name.as_deref()
         }
 
         fn get_partition_type(&self) -> PartitionType {

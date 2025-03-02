@@ -2,8 +2,8 @@
 name = "distinst-chroot"
 version = "0.1.0"
 authors = [
-  "Jeremy Soller <jackpot51@gmail.com>",
-  "Michael Aaron Murphy <mmstickman@gmail.com>",
+    "Jeremy Soller <jackpot51@gmail.com>",
+    "Michael Aaron Murphy <mmstickman@gmail.com>",
 ]
 description = "Convenience wrapper for executing external commands, with chroot support"
 repository = "https://github.com/pop-os/distinst"
@@ -14,7 +14,7 @@ categories = ["os", "os::unix-apis"]
 edition = "2018"
 
 [dependencies]
-sys-mount = "3.0.1"
+sys-mount = "^3.0.1"
 cascade = "1.0"
 log = "0.4.8"
 libc = "0.2.68"
