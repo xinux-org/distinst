@@ -10,19 +10,12 @@
 
     # The flake-utils library
     flake-utils.url = "github:numtide/flake-utils";
-
-    # Rust toolchain shit
-    fenix = {
-      url = "github:nix-community/fenix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   outputs = {
     self,
     nixpkgs,
     flake-utils,
-    fenix,
     ...
   } @ inputs:
     flake-utils.lib.eachDefaultSystem (system: let
@@ -32,6 +25,6 @@
       formatter = pkgs.alejandra;
 
       # Development environment
-      devShells.default = import ./shell.nix {inherit pkgs fenix;};
+      devShells.default = import ./shell.nix {inherit pkgs;};
     });
 }

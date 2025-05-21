@@ -1,18 +1,6 @@
-{
-  pkgs ? import <nixpkgs> {},
-  fenix ? import <fenix> {},
-}: let
+{pkgs ? import <nixpkgs> {}}: let
   # Helpful nix function
   getLibFolder = pkg: "${pkg}/lib";
-
-  # Rust Toolchain via fenix
-  toolchain = fenix.packages.${pkgs.system}.fromToolchainFile {
-    file = ./rust-toolchain.toml;
-
-    # Don't worry, if you need sha256 of your toolchain,
-    # just run `nix build` and copy paste correct sha256.
-    sha256 = "sha256-lMLAupxng4Fd9F1oDw8gx+qA0RuF7ou7xhNU8wgs0PU=";
-  };
 in
   pkgs.stdenv.mkDerivation {
     name = "template-dev";
@@ -36,7 +24,11 @@ in
       alejandra
 
       # Rust
-      toolchain
+      rustc
+      cargo
+      clippy
+      rustfmt
+      rust-analyzer
       cargo-watch
 
       # Other compile time dependencies
@@ -46,7 +38,7 @@ in
     # Runtime dependencies which will be shipped
     # with nix package
     buildInputs = with pkgs; [
-      # openssl
+      openssl
       # libressl
     ];
 

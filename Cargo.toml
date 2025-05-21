@@ -1,17 +1,18 @@
 [package]
 name = "distinst"
 version = "0.5.0"
+edition = "2018"
 description = "Distribution Installer Backend"
-repository = "https://github.com/pop-os/distinst"
+repository = "https://github.com/xinux-org/distinst"
 categories = ["os::unix-apis"]
 keywords = ["linux", "distribution", "installer"]
-authors = [
-    "Jeremy Soller <jackpot51@gmail.com>",
-    "Michael Aaron Murphy <michael@system76.com>",
-]
 license = "LGPL-3.0"
 readme = "README.md"
-edition = "2018"
+authors = [
+  "Jeremy Soller <jackpot51@gmail.com>",
+  "Michael Aaron Murphy <michael@system76.com>",
+  "Sokhibjon Orzikulov <sakhib@orzklv.uz>",
+]
 
 [workspace]
 members = ["cli", "crates/*", "ffi"]
